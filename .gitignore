@@ -1,0 +1,4 @@
+.vagrant/
+auth/*
+*.pyc
+*.log

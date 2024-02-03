@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  registry:
+    image: registry:latest
+    container_name: my_registry
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_HTTP_HOST: https://registry.example.com
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+    volumes:
+      - ./registry-data:/var/lib/registry
+      - ./auth:/auth
+
+volumes:
+  registry-data:
+  auth:
