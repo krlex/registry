@@ -1,5 +1,17 @@
 #!/bin/env bash
 
+export BIN_DIR=`dirname $0`
+export PROJECT_ENV="${BIN_DIR}/../"
+if [ "$EUID" -ne 0 ]; then
+    echo "This script requires sudo privileges. Please run with sudo."
+    exit 1
+fi
+
+# Load variables from .env file
+if [ -f .env ]; then
+    export $(cat .env | xargs)
+fi
+
 docker_init(){
   # Function to check if a command is available
   command_exists() {
@@ -36,6 +48,16 @@ docker_init(){
 
 
 generate_key(){
+  # Check if htpasswd is installed
+  if ! command_exists htpasswd; then
+      echo "htpasswd is not installed. Installing apache2-utils..."
+      sudo apt update
+      sudo apt install -y apache2-utils
+      echo "htpasswd installed successfully."
+  else
+      echo "htpasswd is already installed."
+  fi
+
   htpasswd -Bc ./auth/htpasswd admin
 }
 
@@ -43,11 +65,23 @@ deployment(){
   docker-compose up -d
 }
 
-nginx(){
-  cp ./nginx/config.conf /etc/nginx/config.d/regestry.example.com.conf
+install_nginx(){
+  # Check if Nginx is installed
+  if ! command_exists nginx; then
+      echo "Nginx is not installed. Installing Nginx..."
+      sudo apt update
+      sudo apt install -y nginx
+      echo "Nginx installed successfully."
+  else
+      echo "Nginx is already installed."
+  fi
+}
+nginx_config(){
+  cp ./nginx/config.conf.template /etc/nginx/conf.d/registry.${REGISTRY_DOMAIN}.conf
 }
 
 docker_init
 generate_key
 deployment
-nginx
+install_nginx
+nginx_config

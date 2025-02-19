@@ -2,3 +2,5 @@
 auth/*
 *.pyc
 *.log
+.env
+*.env
