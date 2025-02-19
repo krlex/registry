@@ -65,23 +65,6 @@ deployment(){
   docker-compose up -d
 }
 
-install_nginx(){
-  # Check if Nginx is installed
-  if ! command_exists nginx; then
-      echo "Nginx is not installed. Installing Nginx..."
-      sudo apt update
-      sudo apt install -y nginx
-      echo "Nginx installed successfully."
-  else
-      echo "Nginx is already installed."
-  fi
-}
-nginx_config(){
-  cp ./nginx/config.conf.template /etc/nginx/conf.d/registry.${REGISTRY_DOMAIN}.conf
-}
-
 docker_init
 generate_key
 deployment
-install_nginx
-nginx_config
