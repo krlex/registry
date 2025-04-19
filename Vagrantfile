@@ -10,7 +10,7 @@ Vagrant.configure('2') do |config|
   config.vm.define 'registry' do |registry|
     registry.vm.box = 'ubuntu/jammy64'
     registry.vm.hostname = 'registry'
-    registry.vm.network 'private_network', type: 'dhcp'
+    registry.vm.network 'private_network', ip:192.168.33.33
     # registry.vm.provision 'file', source: '~/.ssh/id_rsa', destination: '~/.ssh/id_rsa'
     registry.vm.provision 'shell', inline: $script
     registry.vm.network 'forwarded_port', guest: 80, host: 8080
