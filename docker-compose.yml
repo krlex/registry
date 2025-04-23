@@ -1,37 +1,38 @@
 services:
-  registry-ui:
-    image: joxit/docker-registry-ui:main
+  registry:
+    image: registry:2
     restart: always
-    ports:
-      - ${UI_PORT}:80
+    container_name: registry
     environment:
+      - REGISTRY_AUTH=htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+      - REGISTRY_AUTH_HTPASSWD_PATH=/auth/registry.passwd
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
+    volumes:
+      - ./data:/var/lib/registry
+      - ./auth:/auth
+    ports:
+      - ${REGISTRY_PORT}:5000
+    networks:
+      - registry-net
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    restart: always
+    container_name: registry-ui
+    environment:
+      - REGISTRY_TITLE=${REGISTRY_TITLE}
+      - REGISTRY_URL=${REGISTRY_UI_REGISTRY_URL}
       - SINGLE_REGISTRY=true
-      - REGISTRY_TITLE=Docker Registry UI
       - DELETE_IMAGES=true
       - SHOW_CONTENT_DIGEST=true
-      - NGINX_PROXY_PASS_URL=http://my_registry:${PORT}
-      - SHOW_CATALOG_NB_TAGS=true
-      - CATALOG_MIN_BRANCHES=1
-      - CATALOG_MAX_BRANCHES=1
-      - TAGLIST_PAGE_SIZE=100
-      - REGISTRY_SECURED=false
-      - CATALOG_ELEMENTS_LIMIT=1000
-    container_name: registry-ui
-
-  registry:
-    image: registry:latest
-    container_name: my_registry
+      - NGINX_PROXY_PASS_URL=${NGINX_PROXY_PASS_URL}
     ports:
-      - "${PORT}:5000"
-    environment:
-      REGISTRY_AUTH: htpasswd
-      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
-      REGISTRY_HTTP_HOST: https://registry.${REGISTRY_DOMAIN}
-      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
-    volumes:
-      - ./registry-data:/var/lib/registry
-      - ./auth:/auth
+      - ${REGISTRY_UI_PORT}:80
+    depends_on:
+      - registry
+    networks:
+      - registry-net
 
-volumes:
-  registry-data:
-  auth:
+networks:
+  registry-net:
